@@ -1,7 +1,7 @@
 import cv2
 import os
 from tkinter import Tk
-from tkinter.filedialog import askopenfilename
+from tkinter.filedialog import askopenfilename, askdirectory
 
 def extract_frames(video_path, output_folder):
     # Create output folder if it doesn't exist
@@ -45,11 +45,16 @@ def main():
     video_path = askopenfilename(filetypes=[("Video Files", "*.mp4 *.avi *.mov *.mkv")])
 
     if not video_path:
-        print("No file selected. Exiting program.")
+        print("No video file selected. Exiting program.")
         return
 
-    # Define the output folder where frames will be saved
-    output_folder = "extracted_frames"
+    # Ask user for output folder
+    print("Please select an output folder to save frames...")
+    output_folder = askdirectory()
+
+    if not output_folder:
+        print("No output folder selected. Exiting program.")
+        return
 
     # Call the function to extract frames
     extract_frames(video_path, output_folder)
