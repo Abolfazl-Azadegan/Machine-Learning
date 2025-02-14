@@ -1,8 +1,12 @@
 from fastai.vision.all import *
 from pathlib import Path
 
+# Re-define the missing function
+def is_cat(x): 
+    return x[0].isupper()  # This is the function used in training
+
 # Load the trained model
-model_path = Path("C:/Users/EFE/.fastai/models/pet_classifier.pkl")  # Update with the correct model path
+model_path = Path("C:/Users/EFE/.fastai/models/pet_classifier.pkl")  # Update with the correct path
 learn_loaded = load_learner(model_path)
 
 # Path to the image you want to classify
