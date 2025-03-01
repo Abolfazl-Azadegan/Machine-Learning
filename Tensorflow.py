@@ -3,6 +3,7 @@ from tensorflow.keras import datasets, layers, models
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+from IPython.display import Image
 
 DATA_PATH = "cifar10_data.npz"
 
@@ -143,7 +144,8 @@ for i in range(16):
 plt.show()
 
 
-
+print(f"Number of training samples: {train_images.shape[0]}")
+print(f"Number of test samples: {test_images.shape[0]}")
 
 # Get the default TensorFlow datasets directory
 cache_dir = os.path.expanduser('~/.keras/datasets')  # For Linux/macOS
@@ -171,3 +173,250 @@ else:
 #     test_labels = data['test_labels']
 
 # print("Dataset loaded from disk.")
+
+
+
+model = models.Sequential()
+model.add(layers.Flatten(input_shape=(32, 32, 3)))
+model.add(layers.Dense(64, activation='relu'))
+model.add(layers.Dense(10, activation='softmax'))
+model.summary()
+model.compile(optimizer='adam',loss='sparse_categorical_crossentropy',metrics=['accuracy'])
+EPOCHS = 10
+history = model.fit(train_images, train_labels, epochs=EPOCHS, validation_data=(test_images, test_labels))
+
+
+
+# 1️⃣ Model Definition (Sequential)
+
+# model = models.Sequential()
+# What is happening here?
+# We are creating a Sequential model using tf.keras.models.Sequential().
+# Sequential means the model consists of a linear stack of layers (one layer after another).
+# It is the simplest way to define a feedforward neural network.
+# 2️⃣ Adding the First Layer (Flatten)
+
+# model.add(layers.Flatten(input_shape=(32, 32, 3)))
+# What is happening here?
+# The Flatten() layer takes a 3D input (32 × 32 × 3 image) and converts it into a 1D vector.
+# Each CIFAR-10 image is a color image of size 32×32 pixels with 3 color channels (RGB).
+# So, a single image has a shape of (32, 32, 3) → Flatten turns it into a 1D array of size 32×32×3 = 3072.
+# This does not change the data, it just reshapes it.
+# 💡 Example:
+
+# Before Flattening (3D)	After Flattening (1D)
+# Image: 32 × 32 × 3	3072 values in a 1D array
+# 3️⃣ Adding the First Dense (Fully Connected) Layer
+
+# model.add(layers.Dense(64, activation='relu'))
+# What is happening here?
+# This is a Dense (Fully Connected) layer with 64 neurons.
+# It takes the 3072 input values from the Flatten layer and connects them to 64 neurons.
+# Each neuron applies a weighted sum of inputs + bias and then applies the ReLU activation function.
+# Understanding activation='relu'
+# ReLU (Rectified Linear Unit) function:
+# 𝑓(𝑥)=max(0,𝑥)
+# If the input is positive, it stays the same.
+# If the input is negative, it becomes zero.
+# This helps in faster training and avoids the vanishing gradient problem.
+# Why use 64 neurons?
+# The number of neurons is a hyperparameter (tunable).
+# More neurons → More complex patterns learned.
+# Fewer neurons → Faster training, but might not learn complex features.
+# 4️⃣ Adding the Output Layer
+
+# model.add(layers.Dense(10, activation='softmax'))
+# What is happening here?
+# This is the final layer of the model.
+# It has 10 neurons because CIFAR-10 has 10 classes (airplane, automobile, bird, etc.).
+# Each neuron represents one class.
+# The activation function is softmax.
+# Understanding activation='softmax'
+# Softmax function converts raw output values into probabilities.
+# It ensures that the sum of all 10 outputs = 1 (100%).
+# The neuron with the highest probability is the predicted class.
+# 💡 Example Output:
+
+# Class	Raw Output	Softmax Output
+# Airplane	3.1	0.70
+# Car	2.0	0.20
+# Bird	1.5	0.10
+# Prediction: Airplane (since it has the highest probability: 0.70).
+
+# 5️⃣ Displaying Model Summary
+
+# model.summary()
+# What is happening here?
+# This prints a detailed summary of the model architecture, including:
+# Layer types
+# Number of parameters in each layer
+# Shape of data as it passes through each layer
+# 💡 Example Output of model.summary()
+
+# Layer (type)         Output Shape     Param #  
+# ==========================================
+# Flatten (Flatten)    (None, 3072)     0
+# Dense (Dense)        (None, 64)       196672
+# Dense (Dense)        (None, 10)       650
+# ==========================================
+# Total params: 197,322
+# Trainable params: 197,322
+# Non-trainable params: 0
+# 6️⃣ Compiling the Model
+
+# model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+# What is happening here?
+# Before training, we need to specify:
+# Optimizer: How the model updates weights.
+# Loss function: How the model measures errors.
+# Metrics: What performance measure to track.
+# Understanding Each Parameter:
+# optimizer='adam' 🏎️
+
+# Adam (Adaptive Moment Estimation) is an adaptive learning rate optimizer.
+# It adjusts learning rates automatically during training.
+# It combines the benefits of SGD + RMSprop.
+# loss='sparse_categorical_crossentropy' 🎯
+
+# Since we have categorical labels (0-9), we use categorical cross-entropy.
+# Since labels are integers, we use sparse_categorical_crossentropy.
+# If labels were one-hot encoded, we would use categorical_crossentropy.
+# metrics=['accuracy'] 📈
+
+# Tracks accuracy during training & validation.
+# 7️⃣ Training the Model
+
+# EPOCHS = 10
+# history = model.fit(train_images, train_labels, epochs=EPOCHS, validation_data=(test_images, test_labels))
+# What is happening here?
+# model.fit() trains the model using the training dataset.
+# The model will run through the entire dataset 10 times (epochs=10).
+# Each epoch consists of 1563 batches (each with 32 images).
+# Understanding Each Parameter:
+# train_images, train_labels → Training data (50,000 images).
+# epochs=10 → The model will go through the full dataset 10 times.
+# validation_data=(test_images, test_labels) → After each epoch, the model evaluates on test data.
+# What happens during training?
+# The model makes predictions on train_images.
+# Computes the loss (error) between predicted & actual labels.
+# Uses backpropagation + Adam optimizer to update weights.
+# Repeats for all 10 epochs.
+# 💡 Example Training Output:
+
+
+# Epoch 1/10
+# 1563/1563 ━━━━━━━━━━━━━━━━ 4s 2ms/step - accuracy: 0.26 - loss: 2.04 - val_accuracy: 0.34 - val_loss: 1.84
+# Epoch 2/10
+# 1563/1563 ━━━━━━━━━━━━━━━━ 3s 2ms/step - accuracy: 0.35 - loss: 1.81 - val_accuracy: 0.36 - val_loss: 1.76
+# ...
+# Epoch 10/10
+# 1563/1563 ━━━━━━━━━━━━━━━━ 3s 2ms/step - accuracy: 0.45 - loss: 1.50 - val_accuracy: 0.42 - val_loss: 1.60
+# What does this output mean?
+# accuracy → Training accuracy on train_images.
+# loss → Training loss (error).
+# val_accuracy → Accuracy on test_images (validation set).
+# val_loss → Loss on test_images.
+# Final Summary
+# Step-by-Step Explanation
+# Step	Code	Purpose
+# 1️⃣	Sequential()	Creates a stack of layers
+# 2️⃣	Flatten()	Converts 32×32×3 images into 3072×1 vectors
+# 3️⃣	Dense(64, activation='relu')	Adds 64 neurons (hidden layer) with ReLU
+# 4️⃣	Dense(10, activation='softmax')	Adds 10 neurons for classification
+# 5️⃣	compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])	Defines optimizer, loss function, and evaluation metric
+# 6️⃣	fit(train_images, train_labels, epochs=10, validation_data=(test_images, test_labels))	Trains the model for 10 epochs
+
+
+
+
+
+
+
+# Here's a breakdown of your understanding:
+# Total Training Images = 50,000
+# Epochs = 10 → This means the model will iterate over all 50,000 images 10 times.
+# Batch Size = 32 → Instead of processing all 50,000 images at once, the model splits them into mini-batches of 32 images.
+# Number of Batches per Epoch =
+# 50000
+# 32
+# =
+# 1562.5
+# →
+# rounded up to 1563
+# 32
+# 50000
+# ​
+#  =1562.5→rounded up to 1563
+# So, in each epoch, the model processes 1563 batches, where each batch contains 32 images.
+# This means that in one complete epoch, the model sees all 50,000 images once, but in smaller chunks of 32 images at a time.
+
+# Final Summary:
+# ✅ In one epoch, the model processes 1563 batches × 32 images per batch = ~50,000 images.
+# ✅ In 10 epochs, the model will have seen each image 10 times in total.
+
+
+def eval_metric(model, history, metric_name, EPOCHS):
+
+    metric = history.history[metric_name]
+    val_metric = history.history['val_' + metric_name]
+    e = range(1, EPOCHS + 1)
+    plt.plot(e, metric, 'bo', label='Train ' + metric_name)
+    plt.plot(e, val_metric, 'b', label='Validation ' + metric_name)
+    plt.xlabel('Epoch number')
+    plt.ylabel(metric_name)
+    plt.title('Comparing training and validation ' + metric_name + ' for ' + model.name)
+    plt.legend()
+    plt.show()
+    
+eval_metric(model,history, 'loss',EPOCHS)
+
+predictions = model.predict(test_images)
+print(predictions[0]) 
+np.argmax(predictions[0])
+
+
+
+def plot_image(i, predictions_array, true_label, img):
+    predictions_array, img = predictions_array, img[i]
+    true_label_local = true_label[i][0]
+    plt.grid(False)
+    plt.xticks([])
+    plt.yticks([])
+    plt.imshow(img, cmap=plt.cm.binary)
+    predicted_label = np.argmax(predictions_array)
+    if predicted_label == true_label_local:
+        color = 'blue'
+    else:
+        color = 'red'
+    plt.xlabel("{} {:2.0f}%({})".format(class_names[predicted_label],100*np.max(predictions_array),class_names[true_label_local]),color=color)
+    
+def plot_value_array(i, predictions_array, true_label):
+    true_label2 = true_label[i][0]
+    plt.grid(False)
+    plt.xticks(range(10))
+    plt.yticks([])
+    thisplot = plt.bar(range(10), predictions_array,
+    color="#777777")
+    plt.ylim([0, 1])
+    predicted_label = np.argmax(predictions_array)
+    thisplot[predicted_label].set_color('red')
+    thisplot[true_label2].set_color('green')
+    
+i = 0
+plt.figure(figsize=(6,3))
+plt.subplot(1,2,1)
+plot_image(i, predictions[i], test_labels, test_images)
+plt.subplot(1,2,2)
+plot_value_array(i, predictions[i], test_labels)
+plt.show()
+    
+    
+i = 5
+plt.figure(figsize=(6,3))
+plt.subplot(1,2,1)
+plot_image(i, predictions[i], test_labels, test_images)
+plt.subplot(1,2,2)
+plot_value_array(i, predictions[i], test_labels)
+plt.show()
+
+
